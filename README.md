@@ -1,1 +1,1 @@
-# discord_to_zoho
+# Discord To Zoho
