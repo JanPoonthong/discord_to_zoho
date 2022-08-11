@@ -2,7 +2,9 @@ import discord
 import logging
 import os
 
+from PIL import Image
 from dotenv import load_dotenv
+from io import StringIO
 
 load_dotenv()
 
@@ -26,19 +28,17 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-    channel = discord.utils.get(message.guild.text_channels, name="general")
-    messages = await channel.history(limit=1).flatten()
-    print(messages[0])
+    # channel = discord.utils.get(message.guild.text_channels, name="general")
+    # messages = await channel.history(limit=1).flatten()
 
     if message.author == client.user:
         return
 
     if message.content.startswith("$hello"):
-        await message.channel.send("Hello!")
+        await message.channel.send("Love you Shan!")
 
-    if message.attachments != None:
-        print(message.attachments[0].filename)
-        print(message.attachments[0].url)
+    print(message.attachments[0].filename)
+    print(message.attachments[0].url)
 
 
 client.run(os.getenv("TOKEN"))
