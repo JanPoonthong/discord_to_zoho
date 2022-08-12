@@ -2,9 +2,7 @@ import discord
 import logging
 import os
 
-from PIL import Image
 from dotenv import load_dotenv
-from io import StringIO
 
 load_dotenv()
 
