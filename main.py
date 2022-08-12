@@ -31,21 +31,24 @@ async def on_message(message):
     # channel = discord.utils.get(message.guild.text_channels, name="general")
     # messages = await channel.history(limit=1).flatten()
 
-    if message.author == client.user:
-        return
-
-    if message.content.startswith("$hello"):
-        await message.channel.send("Love you Shan!")
-    
     if len(message.attachments) > 0:
-            attachment = message.attachments[0]
-    
-    if attachment.filename.endswith(".jpg") or attachment.filename.endswith(".jpeg") or attachment.filename.endswith(".png") or attachment.filename.endswith(".webp") or attachment.filename.endswith(".gif"):
+        attachment = message.attachments[0]
+
+    if (
+        attachment.filename.endswith(".jpg")
+        or attachment.filename.endswith(".jpeg")
+        or attachment.filename.endswith(".png")
+        or attachment.filename.endswith(".webp")
+        or attachment.filename.endswith(".gif")
+    ):
         img_data = requests.get(attachment.url).content
-        with open('image_name.jpg', 'wb') as handler:
+        with open("image_name.jpg", "wb") as handler:
             handler.write(img_data)
 
-    elif "https://images-ext-1.discordapp.net" in message.content or "https://tenor.com/view/" in message.content:
+    elif (
+        "https://images-ext-1.discordapp.net" in message.content
+        or "https://tenor.com/view/" in message.content
+    ):
         print(message.content)
 
 
