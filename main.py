@@ -1,6 +1,8 @@
 import discord
 import logging
 import os
+import requests
+
 
 from dotenv import load_dotenv
 
@@ -34,9 +36,17 @@ async def on_message(message):
 
     if message.content.startswith("$hello"):
         await message.channel.send("Love you Shan!")
+    
+    if len(message.attachments) > 0:
+            attachment = message.attachments[0]
+    
+    if attachment.filename.endswith(".jpg") or attachment.filename.endswith(".jpeg") or attachment.filename.endswith(".png") or attachment.filename.endswith(".webp") or attachment.filename.endswith(".gif"):
+        img_data = requests.get(attachment.url).content
+        with open('image_name.jpg', 'wb') as handler:
+            handler.write(img_data)
 
-    print(message.attachments[0].filename)
-    print(message.attachments[0].url)
+    elif "https://images-ext-1.discordapp.net" in message.content or "https://tenor.com/view/" in message.content:
+        print(message.content)
 
 
 client.run(os.getenv("TOKEN"))
