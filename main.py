@@ -1,8 +1,7 @@
 import discord
 import logging
 import os
-import requests
-
+import aiohttp
 
 from dotenv import load_dotenv
 
@@ -27,29 +26,30 @@ async def on_ready():
 
 
 @client.event
-async def on_message(message):
-    # channel = discord.utils.get(message.guild.text_channels, name="general")
-    # messages = await channel.history(limit=1).flatten()
+async def on_message(message: discord.Message):
+    if valid_image_url(message.content):
+        await download_image(message.content, "images")
 
-    if len(message.attachments) > 0:
-        attachment = message.attachments[0]
+    for attachment in message.attachments:
+        if valid_image_url(attachment.url):
+            await attachment.save(os.path.join("images", attachment.filename))
 
-    if (
-        attachment.filename.endswith(".jpg")
-        or attachment.filename.endswith(".jpeg")
-        or attachment.filename.endswith(".png")
-        or attachment.filename.endswith(".webp")
-        or attachment.filename.endswith(".gif")
-    ):
-        img_data = requests.get(attachment.url).content
-        with open("image_name.jpg", "wb") as handler:
-            handler.write(img_data)
 
-    elif (
-        "https://images-ext-1.discordapp.net" in message.content
-        or "https://tenor.com/view/" in message.content
-    ):
-        print(message.content)
+def valid_image_url(url: str):
+    image_extensions = ["png", "jpg", "jpeg", "gif"]
+    for image_extension in image_extensions:
+        if url.endswith("." + image_extension):
+            return True
+    return False
+
+
+async def download_image(url: str, images_path: str = ""):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as resp:
+            if resp.status == 200:
+                image_name = os.path.basename(url)
+                with open(os.path.join(images_path, image_name), "wb") as f:
+                    f.write(await resp.read())
 
 
 client.run(os.getenv("TOKEN"))
