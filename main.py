@@ -28,23 +28,24 @@ async def on_ready():
 @client.event
 async def on_message(message: discord.Message):
     channel = discord.utils.get(message.guild.text_channels, name="general")
-    messages = await channel.history(limit=500).flatten()
-    for message in messages:
-        if not message.attachments:
-            print(message.author, message.content)
-        else:
-            print(message.author, message.attachments)
+    messages = await channel.history(limit=5).flatten()
 
     if valid_image_url(message.content):
         await download_image(message.content, "images")
 
+    # Doesn't detect link as image
     for attachment in message.attachments:
+        current_directory = os.getcwd()
+        final_directory = os.path.join(current_directory + '/images', f'{message.author}')
+        if not os.path.exists(final_directory):
+            os.makedirs(final_directory)
+        print(message.author)
         if valid_image_url(attachment.url):
-            await attachment.save(os.path.join("images", attachment.filename))
+            await attachment.save(os.path.join("images" + f'/{message.author}', attachment.filename))
 
 
 def valid_image_url(url: str):
-    image_extensions = ["png", "jpg", "jpeg", "gif"]
+    image_extensions = ["png", "jpg", "jpeg", "gif", "PNG", "JPG", "JPEG", "GIF"]
     for image_extension in image_extensions:
         if url.endswith("." + image_extension):
             return True
