@@ -27,6 +27,14 @@ async def on_ready():
 
 @client.event
 async def on_message(message: discord.Message):
+    channel = discord.utils.get(message.guild.text_channels, name="general")
+    messages = await channel.history(limit=500).flatten()
+    for message in messages:
+        if not message.attachments:
+            print(message.author, message.content)
+        else:
+            print(message.author, message.attachments)
+
     if valid_image_url(message.content):
         await download_image(message.content, "images")
 
