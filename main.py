@@ -1,3 +1,5 @@
+from pathlib import Path
+import requests
 import discord
 import logging
 import os
@@ -17,18 +19,27 @@ handler.setFormatter(
 )
 logger.addHandler(handler)
 
-client = discord.Client()
+client = discord.Client(intents=discord.Intents.default())
 
 
 @client.event
 async def on_ready():
     print("We have logged in as {0.user}".format(client))
 
+async def get_history_of_channel(channel):
+    messages = await channel.history(limit=123).flatten() # adding None lets us retrieve every message
+    for message in messages:
+        # do something with that message
+        print(message.content)
 
 @client.event
 async def on_message(message: discord.Message):
-    channel = discord.utils.get(message.guild.text_channels, name="general")
-    messages = await channel.history(limit=5).flatten()
+    channel = client.get_channel(911489493478047758)
+
+    messages = [message async for message in channel.history(limit=123)]
+    print(messages)
+    
+    #await get_history_of_channel(discord.TextChannel)
 
     if valid_image_url(message.content):
         await download_image(message.content, "images")
@@ -50,6 +61,22 @@ def valid_image_url(url: str):
         if url.endswith("." + image_extension):
             return True
     return False
+
+def zoho_token():
+    url = "https://accounts.zoho.com/oauth/v2/token?refresh_token={os.environ.get('zoho_refresh_token')}&client_secret={os.environ.get('zoho_client_secret')}&grant_type=refresh_token&client_id={os.environ.get('zoho_client_id')}"
+    access_token = requests.post(url)
+    return access_token["access_token"]
+
+
+def save_zoho_drive():
+    url = "https://www.zohoapis.com/workdrive/api/v1/upload?parent_id=hltaja4afd79bedb04e93bcede5e7e897802f&override-name-exist=true"
+    for path in Path("./").rglob("*.png"):
+        files = {"content": open(f"{path}", "rb")}
+        headers_for_zoho = {
+            "Authorization": f"Zoho-oauthtoken {os.environ.get('file_zoho_token')}"
+        }
+        response = requests.post(url, files=files, headers=headers_for_zoho)
+        print(response.json())
 
 
 async def download_image(url: str, images_path: str = ""):
