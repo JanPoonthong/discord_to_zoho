@@ -44,15 +44,15 @@ async def on_message(message: discord.Message):
     if valid_image_url(message.content):
         await download_image(message.content, "images")
 
-    # Doesn't detect link as image
-    for attachment in message.attachments:
-        current_directory = os.getcwd()
-        final_directory = os.path.join(current_directory + '/images', f'{message.author}')
-        if not os.path.exists(final_directory):
-            os.makedirs(final_directory)
-        print(message.author)
-        if valid_image_url(attachment.url):
-            await attachment.save(os.path.join("images" + f'/{message.author}', attachment.filename))
+    for message in messages:
+        for attachment in message.attachments:
+            current_directory = os.getcwd()
+            final_directory = os.path.join(current_directory + '/images', f'{message.author}')
+            if not os.path.exists(final_directory):
+                os.makedirs(final_directory)
+            print(message.author)
+            if valid_image_url(attachment.url):
+                await attachment.save(os.path.join("images" + f'/{message.author}', attachment.filename))
 
 
 def valid_image_url(url: str):
