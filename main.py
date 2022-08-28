@@ -1,3 +1,6 @@
+import json
+from pathlib import Path
+import requests
 import discord
 import logging
 import os
@@ -17,7 +20,7 @@ handler.setFormatter(
 )
 logger.addHandler(handler)
 
-client = discord.Client()
+client = discord.Client(intents=discord.Intents.default())
 
 
 @client.event
@@ -27,29 +30,93 @@ async def on_ready():
 
 @client.event
 async def on_message(message: discord.Message):
-    channel = discord.utils.get(message.guild.text_channels, name="general")
-    messages = await channel.history(limit=5).flatten()
+    channel = client.get_channel(911489493478047758)
+    messages = [message async for message in channel.history(limit=None)]
 
     if valid_image_url(message.content):
         await download_image(message.content, "images")
 
-    # Doesn't detect link as image
-    for attachment in message.attachments:
-        current_directory = os.getcwd()
-        final_directory = os.path.join(current_directory + '/images', f'{message.author}')
-        if not os.path.exists(final_directory):
-            os.makedirs(final_directory)
-        print(message.author)
-        if valid_image_url(attachment.url):
-            await attachment.save(os.path.join("images" + f'/{message.author}', attachment.filename))
+    for message in messages:
+        for attachment in message.attachments:
+            current_directory = os.getcwd()
+            final_directory = os.path.join(
+                current_directory + "/images", f"{message.author}"
+            )
+            if not os.path.exists(final_directory):
+                os.makedirs(final_directory)
+            print(message.author)
+            if valid_image_url(attachment.url):
+                await attachment.save(
+                    os.path.join(
+                        "images" + f"/{message.author}", attachment.filename
+                    )
+                )
 
 
 def valid_image_url(url: str):
-    image_extensions = ["png", "jpg", "jpeg", "gif", "PNG", "JPG", "JPEG", "GIF"]
+    image_extensions = [
+        "png",
+        "jpg",
+        "jpeg",
+        "gif",
+        "PNG",
+        "JPG",
+        "JPEG",
+        "GIF",
+    ]
     for image_extension in image_extensions:
         if url.endswith("." + image_extension):
             return True
     return False
+
+
+def zoho_token():
+    url = f"https://accounts.zoho.com/oauth/v2/token?refresh_token={os.getenv('zoho_refresh_token')}&client_secret={os.getenv('zoho_client_secret')}&grant_type=refresh_token&client_id={os.getenv('zoho_client_id')}"
+    access_token = requests.post(url)
+    return access_token["access_token"]
+
+
+def create_folder_zoho():
+    path = "images/"
+    dir_list = os.listdir(path)
+
+    url = "https://www.zohoapis.com/workdrive/api/v1/files"
+    headers = {
+        "Authorization": f"Zoho-oauthtoken {os.getenv('zoho_access_token')}",
+        "Content-Type": "application/json",
+    }
+
+    for dir in dir_list:
+        payload = json.dumps(
+            {
+                "data": {
+                    "attributes": {
+                        "name": f"{dir}",
+                        "parent_id": "p1u2g5369e6ac75d0445e9a8ab10172fc8cee",
+                    },
+                    "type": "files",
+                }
+            }
+        )
+
+        response = requests.request("POST", url, headers=headers, data=payload)
+
+    return response.text
+
+
+create_folder_zoho()
+
+
+def save_zoho_drive():
+    url = "https://www.zohoapis.com/workdrive/api/v1/upload?parent_id=hltaja4afd79bedb04e93bcede5e7e897802f&override-name-exist=true"
+    headers_for_zoho = {
+        "Authorization": f"Zoho-oauthtoken {os.getenv('zoho_access_token')}"
+    }
+
+    for path in Path("./").rglob("*.png"):
+        files = {"content": open(f"{path}", "rb")}
+        response = requests.post(url, files=files, headers=headers_for_zoho)
+        print(response.json())
 
 
 async def download_image(url: str, images_path: str = ""):
