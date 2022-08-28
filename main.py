@@ -113,10 +113,13 @@ def save_zoho_drive():
         "Authorization": f"Zoho-oauthtoken {os.getenv('zoho_access_token')}"
     }
 
-    for path in Path("./").rglob("*.png"):
-        files = {"content": open(f"{path}", "rb")}
-        response = requests.post(url, files=files, headers=headers_for_zoho)
-        print(response.json())
+    images_ext = ["png", "jpeg", "jpg"]
+
+    for ext in images_ext:
+        for path in Path("./").rglob(f"*.{ext}"):
+            files = {"content": open(f"{path}", "rb")}
+            response = requests.post(url, files=files, headers=headers_for_zoho)
+            print(response.json())
 
 
 async def download_image(url: str, images_path: str = ""):
