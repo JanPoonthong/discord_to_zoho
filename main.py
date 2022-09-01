@@ -113,7 +113,7 @@ def save_zoho_drive():
         "Authorization": f"Zoho-oauthtoken {os.getenv('zoho_access_token')}"
     }
 
-    images_ext = ["png", "jpeg", "jpg"]
+    images_ext = ["png", "jpeg", "jpg", "gif"]
 
     for ext in images_ext:
         for path in Path("./").rglob(f"*.{ext}"):
