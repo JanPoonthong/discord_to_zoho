@@ -109,35 +109,63 @@ def list_folders_zoho():
 
     return folder_lists
 
+
+def create_folder_zoho(folder_lists):
+    if not os.path.exists(path):
+        os.mkdir(path)
+
+    if dir_list == []:
+        return
+
     url = "https://www.zohoapis.com/workdrive/api/v1/files"
     headers = {
         "Authorization": f"Zoho-oauthtoken {os.getenv('zoho_access_token')}",
         "Content-Type": "application/json",
     }
 
+    response = False
     for dir in dir_list:
-        payload = json.dumps(
-            {
-                "data": {
-                    "attributes": {
-                        "name": f"{dir}",
-                        "parent_id": "p1u2g5369e6ac75d0445e9a8ab10172fc8cee",
-                    },
-                    "type": "files",
+        if folder_lists == {}:
+            payload = json.dumps(
+                {
+                    "data": {
+                        "attributes": {
+                            "name": f"{dir}",
+                            "parent_id": "p1u2g5369e6ac75d0445e9a8ab10172fc8cee",
+                        },
+                        "type": "files",
+                    }
                 }
-            }
-        )
+            )
 
-        response = requests.request("POST", url, headers=headers, data=payload)
+            response = requests.request(
+                "POST", url, headers=headers, data=payload
+            )
+        elif folder_lists[dir]:
+            continue
+        else:
+            payload = json.dumps(
+                {
+                    "data": {
+                        "attributes": {
+                            "name": f"{dir}",
+                            "parent_id": "p1u2g5369e6ac75d0445e9a8ab10172fc8cee",
+                        },
+                        "type": "files",
+                    }
+                }
+            )
 
-    return response.text
+            response = requests.request(
+                "POST", url, headers=headers, data=payload
+            )
+
+    if response:
+        return response.text
+    else:
+        return ""
 
 
-create_folder_zoho()
-
-
-def save_zoho_drive():
-    url = "https://www.zohoapis.com/workdrive/api/v1/upload?parent_id=hltaja4afd79bedb04e93bcede5e7e897802f&override-name-exist=true"
     headers_for_zoho = {
         "Authorization": f"Zoho-oauthtoken {os.getenv('zoho_access_token')}"
     }
