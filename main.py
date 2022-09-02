@@ -166,6 +166,8 @@ def create_folder_zoho(folder_lists):
         return ""
 
 
+def save_zoho_drive(parent_id, folder_name):
+    url = f"https://www.zohoapis.com/workdrive/api/v1/upload?parent_id={parent_id}&override-name-exist=true"
     headers_for_zoho = {
         "Authorization": f"Zoho-oauthtoken {os.getenv('zoho_access_token')}"
     }
@@ -173,7 +175,7 @@ def create_folder_zoho(folder_lists):
     images_ext = ["png", "jpeg", "jpg", "gif"]
 
     for ext in images_ext:
-        for path in Path("./").rglob(f"*.{ext}"):
+        for path in Path(f"images/{folder_name}").rglob(f"*.{ext}"):
             files = {"content": open(f"{path}", "rb")}
             response = requests.post(url, files=files, headers=headers_for_zoho)
             print(response.json())
@@ -188,4 +190,12 @@ async def download_image(url: str, images_path: str = ""):
                     f.write(await resp.read())
 
 
-client.run(os.getenv("TOKEN"))
+def main():
+    create_folder_zoho(list_folders_zoho())
+    temp = list_folders_zoho()
+    for folder_name in temp:
+        save_zoho_drive(temp[folder_name], folder_name)
+    # client.run(os.getenv("TOKEN"))
+
+
+main()
