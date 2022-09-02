@@ -23,6 +23,17 @@ logger.addHandler(handler)
 client = discord.Client(intents=discord.Intents.default())
 
 
+path = "images/"
+dir_list = os.listdir(path)
+temp = []
+
+for folder in dir_list:
+    if folder.startswith("user_"):
+        temp.append(folder)
+
+dir_list = temp
+
+
 @client.event
 async def on_ready():
     print("We have logged in as {0.user}".format(client))
