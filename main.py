@@ -88,9 +88,26 @@ def zoho_token():
     return access_token["access_token"]
 
 
-def create_folder_zoho():
-    path = "images/"
-    dir_list = os.listdir(path)
+def list_folders_zoho():
+    url = "https://www.zohoapis.com/workdrive/api/v1/privatespace/p1u2g5369e6ac75d0445e9a8ab10172fc8cee/folders"
+
+    headers = {
+        "Authorization": f"Zoho-oauthtoken {os.getenv('zoho_access_token')}",
+    }
+
+    response = requests.request("GET", url, headers=headers)
+    folder_lists = {}
+    response_data = response.json()["data"]
+    print(response_data)
+    if response_data == []:
+        return folder_lists
+
+    for i in range(len(dir_list)):
+        folder_lists[response_data[i]["attributes"]["name"]] = response_data[i][
+            "id"
+        ]
+
+    return folder_lists
 
     url = "https://www.zohoapis.com/workdrive/api/v1/files"
     headers = {
