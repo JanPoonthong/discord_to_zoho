@@ -59,9 +59,10 @@ async def on_message(message: discord.Message):
                 os.makedirs(final_directory)
             print(message.author)
             if valid_image_url(attachment.url):
+
                 await attachment.save(
                     os.path.join(
-                        "images" + f"/user_{message.author}",
+                        final_directory,
                         attachment.filename,
                     )
                 )
