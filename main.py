@@ -91,6 +91,13 @@ def zoho_token():
     return access_token["access_token"]
 
 
+def response_handler_500(response):
+    if not response.status_code == 200:
+        raise Exception(f"{response.text} {response.status_code}")
+    else:
+        return response.status_code, response.text
+
+
 def list_folders_zoho():
     url = "https://www.zohoapis.com/workdrive/api/v1/privatespace/p1u2g5369e6ac75d0445e9a8ab10172fc8cee/folders"
 
