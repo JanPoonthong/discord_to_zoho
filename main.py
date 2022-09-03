@@ -24,19 +24,21 @@ client = discord.Client(intents=discord.Intents.default())
 
 
 path = "images/"
+if not os.path.exists(path):
+    os.mkdir(path)
+
 dir_list = os.listdir(path)
-temp = []
 
 for folder in dir_list:
     if folder.startswith("user_"):
-        temp.append(folder)
-
-dir_list = temp
+        continue
+    else:
+        dir_list.remove(folder)
 
 
 @client.event
 async def on_ready():
-    print("We have logged in as {0.user}".format(client))
+    print(f"We have logged in as {client.user}.")
 
 
 @client.event
