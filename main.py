@@ -44,7 +44,7 @@ async def on_ready():
 @client.event
 async def on_message(message: discord.Message):
     channel = client.get_channel(911489493478047758)
-    messages = [message async for message in channel.history(limit=20)]
+    messages = [message async for message in channel.history(limit=None)]
 
     if valid_image_url(message.content):
         await download_image(message.content, "images")
