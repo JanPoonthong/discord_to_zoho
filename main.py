@@ -44,7 +44,7 @@ async def on_ready():
 @client.event
 async def on_message(message: discord.Message):
     channel = client.get_channel(911489493478047758)
-    messages = [message async for message in channel.history(limit=None)]
+    messages = [message async for message in channel.history(limit=20)]
 
     if valid_image_url(message.content):
         await download_image(message.content, "images")
@@ -85,15 +85,25 @@ def valid_image_url(url: str):
     return False
 
 
-def zoho_token():
+def generate_zoho_access_token():
     url = f"https://accounts.zoho.com/oauth/v2/token?refresh_token={os.getenv('zoho_refresh_token')}&client_secret={os.getenv('zoho_client_secret')}&grant_type=refresh_token&client_id={os.getenv('zoho_client_id')}"
     access_token = requests.post(url)
-    return access_token["access_token"]
+    with open(".env", "r+") as f:
+        for line in f.readlines():
+            key, value = line.split('=')
+            if key == "zoho_access_token":
+                value = access_token.json()["access_token"]
+                f.seek(18)
+                f.write(value)
+    return access_token.json()["access_token"]
 
 
 def response_handler_500(response):
     if not response.status_code == 200:
-        raise Exception(f"{response.text} {response.status_code}")
+        if response.json()["errors"][0]["title"] == "Invalid OAuth token.":
+            os.environ['zoho_access_token'] = generate_zoho_access_token()
+        else:
+            raise Exception(f"{response.text} {response.status_code}")
     else:
         return response.status_code, response.text
 
@@ -109,7 +119,10 @@ def list_folders_zoho():
     response_handler_500(response)
 
     folder_lists = {}
-    response_data = response.json()["data"]
+    try:
+        response_data = response.json()["data"]
+    except KeyError:
+        pass
 
     if not response_data:
         return folder_lists
@@ -150,9 +163,9 @@ def create_folder_zoho(folder_lists):
             response = requests.request(
                 "POST", url, headers=headers, data=payload
             )
-        elif folder_lists[local_folder]:
-            continue
-        else:
+        try:
+            folder_lists[local_folder]
+        except KeyError:
             payload = json.dumps(
                 {
                     "data": {
@@ -196,10 +209,8 @@ def save_zoho_drive(parent_id, folder_name):
         for local_path in Path(f"images/{folder_name}").rglob(f"*.{ext}"):
             files = {"content": open(f"{local_path}", "rb")}
             response = requests.post(url, files=files, headers=headers_for_zoho)
-            print(
-                response_handler_500(response),
-                f"Saved {local_path} in {folder_name} in Zoho",
-            )
+            response_handler_500(response)
+            print(f"Saved {local_path} in {folder_name} in Zoho",)
 
 
 async def download_image(url: str, images_path: str = ""):
@@ -212,10 +223,10 @@ async def download_image(url: str, images_path: str = ""):
 
 
 def main():
-    # folder_list = list_folders_zoho()
-    # create_folder_zoho(folder_list)
-    # for folder_name in folder_list:
-        # save_zoho_drive(folder_list[folder_name], folder_name)
+    folder_list = list_folders_zoho()
+    create_folder_zoho(folder_list)
+    for folder_name in folder_list:
+        save_zoho_drive(folder_list[folder_name], folder_name)
     client.run(os.getenv("TOKEN"))
 
 
