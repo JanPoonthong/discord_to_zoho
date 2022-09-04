@@ -90,7 +90,7 @@ def generate_zoho_access_token():
     access_token = requests.post(url)
     with open(".env", "r+") as f:
         for line in f.readlines():
-            key, value = line.split('=')
+            key, value = line.split("=")
             if key == "zoho_access_token":
                 value = access_token.json()["access_token"]
                 f.seek(18)
@@ -101,7 +101,7 @@ def generate_zoho_access_token():
 def response_handler_500(response):
     if not response.status_code == 200:
         if response.json()["errors"][0]["title"] == "Invalid OAuth token.":
-            os.environ['zoho_access_token'] = generate_zoho_access_token()
+            os.environ["zoho_access_token"] = generate_zoho_access_token()
         else:
             raise Exception(f"{response.text} {response.status_code}")
     else:
@@ -210,7 +210,9 @@ def save_zoho_drive(parent_id, folder_name):
             files = {"content": open(f"{local_path}", "rb")}
             response = requests.post(url, files=files, headers=headers_for_zoho)
             response_handler_500(response)
-            print(f"Saved {local_path} in {folder_name} in Zoho",)
+            print(
+                f"Saved {local_path} in {folder_name} in Zoho",
+            )
 
 
 async def download_image(url: str, images_path: str = ""):
