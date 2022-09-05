@@ -1,3 +1,4 @@
 ENV/
+.env_token
 .env
 discord.log
