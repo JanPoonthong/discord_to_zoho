@@ -44,7 +44,8 @@ be certain to include `client_id` on `{client_id}`
 
 1.  Copy the `code` and paste on code={}
 
-POST request on postman: 
+POST request on postman:
+
         https://accounts.zoho.com/oauth/v2/token?code={code}&client_secret={clinet_secret}&redirect_uri=https://janpoonthong.github.io/portfolio/zoho&grant_type=authorization_code&client_id={client_id}
 
 1.  Put that refresh token on that you will use .env
