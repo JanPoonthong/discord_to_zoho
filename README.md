@@ -14,7 +14,7 @@ Instructions:
 
         $ pip3 install -r requirements.txt
 
-## Create .env
+## About .env
 
 Instructions:
 
