@@ -112,6 +112,7 @@ def read_token_from_env_token():
     global token
     with open(".env_token", "r") as f:
         token = f.readline()
+    return token
 
 
 def list_folders_zoho():
@@ -120,7 +121,7 @@ def list_folders_zoho():
     result = "Make a new request"
     while result == "Make a new request":
         headers = {
-            "Authorization": f"Zoho-oauthtoken {token}",
+            "Authorization": f"Zoho-oauthtoken {read_token_from_env_token()}",
         }
 
         response = requests.request("GET", url, headers=headers)
