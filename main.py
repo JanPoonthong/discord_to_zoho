@@ -101,8 +101,9 @@ zoho_access_token = None
 
 def response_handler_500(response):
     global zoho_access_token
-
-    if not response.status_code == 200:
+    if response.status_code == 201:
+        pass
+    elif not response.status_code == 200:
         if response.json()["errors"][0]["title"] == "Invalid OAuth token.":
             zoho_access_token = generate_zoho_access_token()
             return "Make a new request"
