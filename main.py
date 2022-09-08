@@ -47,7 +47,7 @@ async def on_ready():
 
 
 @client.event
-async def on_message(message: discord.Message):
+async def on_message():
     channel = client.get_channel(int(os.getenv("channel_id")))
     messages = [message async for message in channel.history(limit=None)]
     for message in messages:
@@ -109,7 +109,6 @@ def response_handler_500(response):
 
 
 def read_token_from_env_token():
-    global token
     with open(".env_token", "r") as f:
         token = f.readline()
     return token
