@@ -56,12 +56,17 @@ async def on_message(message: discord.Message):
             )
             if not os.path.exists(final_directory):
                 os.makedirs(final_directory)
+            author_images = os.listdir(final_directory)
+            files_completed = []
+            for image in author_images:
+                files_completed.append(image.removeprefix("file_"))
+            if attachment.filename in files_completed:
+                continue
             if valid_image_url(attachment.url):
-                author_images = os.listdir(CURRENT_DIRECTORY)
                 await attachment.save(
                     os.path.join(
                         final_directory,
-                        attachment.filename,
+                        "file_" + attachment.filename,
                     )
                 )
 
