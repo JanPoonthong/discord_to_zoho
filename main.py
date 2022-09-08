@@ -25,6 +25,7 @@ client = discord.Client(intents=discord.Intents.default())
 
 PATH = "images/"
 DIR_LIST = os.listdir(PATH)
+CURRENT_DIRECTORY = os.getcwd()
 
 
 def create_image_folder_in_local():
@@ -49,20 +50,15 @@ async def on_ready():
 async def on_message(message: discord.Message):
     channel = client.get_channel(int(os.getenv("channel_id")))
     messages = [message async for message in channel.history(limit=None)]
-
-    if valid_image_url(message.content):
-        await download_image(message.content, "images")
-
     for message in messages:
         for attachment in message.attachments:
-            current_directory = os.getcwd()
             final_directory = os.path.join(
-                current_directory + "/images", f"user_{message.author}"
+                CURRENT_DIRECTORY + f"/{PATH}", f"user_{message.author}"
             )
             if not os.path.exists(final_directory):
                 os.makedirs(final_directory)
             if valid_image_url(attachment.url):
-
+                author_images = os.listdir(CURRENT_DIRECTORY)
                 await attachment.save(
                     os.path.join(
                         final_directory,
