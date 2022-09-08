@@ -24,7 +24,6 @@ client = discord.Client(intents=discord.Intents.default())
 
 
 PATH = "images/"
-DIR_LIST = os.listdir(PATH)
 CURRENT_DIRECTORY = os.getcwd()
 
 
