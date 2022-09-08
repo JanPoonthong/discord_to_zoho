@@ -23,17 +23,21 @@ logger.addHandler(handler)
 client = discord.Client(intents=discord.Intents.default())
 
 
-path = "images/"
-if not os.path.exists(path):
-    os.mkdir(path)
+PATH = "images/"
+DIR_LIST = os.listdir(PATH)
 
-dir_list = os.listdir(path)
 
-for folder in dir_list:
-    if folder.startswith("user_"):
-        continue
-    else:
-        dir_list.remove(folder)
+def create_image_folder_in_local():
+    if not os.path.exists(PATH):
+        os.mkdir(PATH)
+
+
+def add_prefix_to_local_folders():
+    for folder in DIR_LIST:
+        if folder.startswith("user_"):
+            continue
+        else:
+            DIR_LIST.remove(folder)
 
 
 @client.event
@@ -43,7 +47,7 @@ async def on_ready():
 
 @client.event
 async def on_message(message: discord.Message):
-    channel = client.get_channel(os.getenv("channel_id"))
+    channel = client.get_channel(int(os.getenv("channel_id")))
     messages = [message async for message in channel.history(limit=None)]
 
     if valid_image_url(message.content):
@@ -142,7 +146,7 @@ def list_folders_zoho():
 
 
 def create_folder_zoho(folder_lists):
-    if not dir_list:
+    if not DIR_LIST:
         return
 
     url = "https://www.zohoapis.com/workdrive/api/v1/files"
@@ -152,7 +156,7 @@ def create_folder_zoho(folder_lists):
     }
 
     response = False
-    for local_folder in dir_list:
+    for local_folder in DIR_LIST:
         if folder_lists == {}:
             payload = json.dumps(
                 {
@@ -231,6 +235,8 @@ async def download_image(url: str, images_path: str = ""):
 
 
 def main():
+    create_image_folder_in_local()
+    add_prefix_to_local_folders()
     folder_list = list_folders_zoho()
     create_folder_zoho(folder_list)
     for folder_name in folder_list:
