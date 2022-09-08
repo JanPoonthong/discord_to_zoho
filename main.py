@@ -46,7 +46,7 @@ async def on_ready():
 
 
 @client.event
-async def on_message():
+async def on_message(message: discord.Message):
     channel = client.get_channel(int(os.getenv("channel_id")))
     messages = [message async for message in channel.history(limit=None)]
     for message in messages:
