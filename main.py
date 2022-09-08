@@ -177,6 +177,8 @@ def create_folder_zoho(folder_lists):
             response = requests.request(
                 "POST", url, headers=headers, data=payload
             )
+            response_handler_500(response)
+            print(f"{local_folder} created in Zoho WorkDrive")
         try:
             folder_lists[local_folder]
         except KeyError:
@@ -195,6 +197,8 @@ def create_folder_zoho(folder_lists):
             response = requests.request(
                 "POST", url, headers=headers, data=payload
             )
+            response_handler_500(response)
+            print(f"{local_folder} created in Zoho WorkDrive")
 
     if response:
         return response.text
@@ -237,10 +241,13 @@ async def download_image(url: str, images_path: str = ""):
 
 
 def main():
+    global DIR_LIST
+
     create_image_folder_in_local()
+    DIR_LIST = os.listdir(PATH)
     add_prefix_to_local_folders()
     folder_list = list_folders_zoho()
-    create_folder_zoho(folder_list)
+    print(create_folder_zoho(folder_list))
     for folder_name in folder_list:
         save_zoho_drive(folder_list[folder_name], folder_name)
     client.run(os.getenv("TOKEN"))
