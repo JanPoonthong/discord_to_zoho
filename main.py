@@ -113,10 +113,14 @@ def response_handler_500(response):
         return True
 
 
+TOKEN = None
+
+
 def read_token_from_env_token():
+    global TOKEN
     with open(".env_token", "r") as f:
-        token = f.readline()
-    return token
+        TOKEN = f.readline()
+    return TOKEN
 
 
 def list_folders_zoho():
@@ -151,7 +155,7 @@ def create_folder_zoho(folder_lists):
 
     url = "https://www.zohoapis.com/workdrive/api/v1/files"
     headers = {
-        "Authorization": f"Zoho-oauthtoken {os.getenv('zoho_access_token')}",
+        "Authorization": f"Zoho-oauthtoken {TOKEN}",
         "Content-Type": "application/json",
     }
 
@@ -200,9 +204,7 @@ def create_folder_zoho(folder_lists):
 
 def save_zoho_drive(parent_id, folder_name):
     url = f"https://www.zohoapis.com/workdrive/api/v1/upload?parent_id={parent_id}&override-name-exist=true"
-    headers_for_zoho = {
-        "Authorization": f"Zoho-oauthtoken {os.getenv('zoho_access_token')}"
-    }
+    headers_for_zoho = {"Authorization": f"Zoho-oauthtoken {TOKEN}"}
 
     images_ext = [
         "png",
