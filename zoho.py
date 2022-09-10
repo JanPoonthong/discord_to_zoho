@@ -2,11 +2,9 @@ import json
 import os
 from pathlib import Path
 
-import aiohttp
 import requests
 
-import bot
-import main
+import file_management
 
 TOKEN = ""
 
@@ -45,7 +43,7 @@ def response_handler_500(response):
 
 
 def list_folders_zoho():
-    url = "https://www.zohoapis.com/workdrive/api/v1/privatespace/p1u2g5369e6ac75d0445e9a8ab10172fc8cee/folders"
+    url = f"https://www.zohoapis.com/workdrive/api/v1/privatespace/{os.getenv('zoho_private_space_id')}/folders"
 
     response = []
     result = "Make a new request"
@@ -71,8 +69,28 @@ def list_folders_zoho():
     return folder_lists
 
 
+def create_folder_in_zoho_request(local_folder, url, headers):
+    """Request to zoho to create a folder"""
+    payload = json.dumps(
+        {
+            "data": {
+                "attributes": {
+                    "name": f"{local_folder}",
+                    "parent_id": f"{os.getenv('zoho_parent_id')}",
+                },
+                "type": "files",
+            }
+        }
+    )
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+    response_handler_500(response)
+    print(f"{local_folder} created in Zoho WorkDrive")
+
+
 def create_folder_zoho(folder_lists):
-    if not main.DIR_LIST:
+    """Check if folder exist in zoho, if not then create a folder"""
+    if not file_management.DIR_LIST:
         return
 
     url = "https://www.zohoapis.com/workdrive/api/v1/files"
@@ -82,45 +100,13 @@ def create_folder_zoho(folder_lists):
     }
 
     response = False
-    for local_folder in main.DIR_LIST:
+    for local_folder in file_management.DIR_LIST:
         if folder_lists == {}:
-            payload = json.dumps(
-                {
-                    "data": {
-                        "attributes": {
-                            "name": f"{local_folder}",
-                            "parent_id": "p1u2g5369e6ac75d0445e9a8ab10172fc8cee",
-                        },
-                        "type": "files",
-                    }
-                }
-            )
-
-            response = requests.request(
-                "POST", url, headers=headers, data=payload
-            )
-            response_handler_500(response)
-            print(f"{local_folder} created in Zoho WorkDrive")
+            create_folder_in_zoho_request(local_folder, url, headers)
         try:
             folder_lists[local_folder]
         except KeyError:
-            payload = json.dumps(
-                {
-                    "data": {
-                        "attributes": {
-                            "name": f"{local_folder}",
-                            "parent_id": "p1u2g5369e6ac75d0445e9a8ab10172fc8cee",
-                        },
-                        "type": "files",
-                    }
-                }
-            )
-
-            response = requests.request(
-                "POST", url, headers=headers, data=payload
-            )
-            response_handler_500(response)
-            print(f"{local_folder} created in Zoho WorkDrive")
+            create_folder_in_zoho_request(local_folder, url, headers)
 
     if response:
         return response.text
@@ -132,18 +118,7 @@ def save_zoho_drive(parent_id, folder_name):
     url = f"https://www.zohoapis.com/workdrive/api/v1/upload?parent_id={parent_id}&override-name-exist=true"
     headers_for_zoho = {"Authorization": f"Zoho-oauthtoken {TOKEN}"}
 
-    images_ext = [
-        "png",
-        "jpeg",
-        "jpg",
-        "gif",
-        "PNG",
-        "JPG",
-        "JPEG",
-        "GIF",
-    ]
-
-    for ext in images_ext:
+    for ext in file_management.image_extensions:
         for local_path in Path(f"images/{folder_name}").rglob(f"*.{ext}"):
             files = {"content": open(f"{local_path}", "rb")}
             response = requests.post(url, files=files, headers=headers_for_zoho)
@@ -151,16 +126,3 @@ def save_zoho_drive(parent_id, folder_name):
             print(
                 f"Saved {local_path} in {folder_name} in Zoho",
             )
-
-
-def run():
-    main.create_image_folder_in_local()
-    main.add_prefix_to_local_folders()
-    folder_list = list_folders_zoho()
-    print(create_folder_zoho(folder_list))
-    for folder_name in folder_list:
-        save_zoho_drive(folder_list[folder_name], folder_name)
-    bot.client.run(os.getenv("TOKEN"))
-
-
-run()

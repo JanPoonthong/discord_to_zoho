@@ -3,7 +3,8 @@ import os
 
 import discord
 
-import main
+import file_management
+import zoho
 
 logger = logging.getLogger("discord")
 logger.setLevel(logging.DEBUG)
@@ -17,6 +18,8 @@ logger.addHandler(handler)
 
 client = discord.Client(intents=discord.Intents.default())
 
+folder_list = zoho.list_folders_zoho()
+
 
 @client.event
 async def on_ready():
@@ -26,5 +29,7 @@ async def on_ready():
 @client.event
 async def on_message(message: discord.Message):
     channel = client.get_channel(int(os.getenv("channel_id")))
-    messages = [message async for message in channel.history(limit=None)]
-    await main.save_image_on_local(messages)
+    messages = [message async for message in channel.history(limit=200)]
+    await file_management.save_image_on_local(messages)
+    for folder_name in folder_list:
+        zoho.save_zoho_drive(folder_list[folder_name], folder_name)
