@@ -9,4 +9,4 @@ COPY ./ /var/discord
 COPY requirements.txt /var/discord
 RUN pip install -r requirements.txt
 
-ENTRYPOINT python /var/discord/main.py
+ENTRYPOINT python /var/discord/zoho.py
