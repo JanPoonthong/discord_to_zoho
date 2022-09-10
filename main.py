@@ -22,9 +22,10 @@ logger.addHandler(handler)
 
 client = discord.Client(intents=discord.Intents.default())
 
-
 PATH = "images/"
 CURRENT_DIRECTORY = os.getcwd()
+TOKEN = None
+DIR_LIST = []
 
 
 def create_image_folder_in_local():
@@ -45,10 +46,9 @@ async def on_ready():
     print(f"We have logged in as {client.user}.")
 
 
-@client.event
-async def on_message(message: discord.Message):
-    channel = client.get_channel(int(os.getenv("channel_id")))
-    messages = [message async for message in channel.history(limit=None)]
+async def save_image_on_local(messages):
+    files_completed = []
+
     for message in messages:
         for attachment in message.attachments:
             final_directory = os.path.join(
@@ -57,7 +57,6 @@ async def on_message(message: discord.Message):
             if not os.path.exists(final_directory):
                 os.makedirs(final_directory)
             author_images = os.listdir(final_directory)
-            files_completed = []
             for image in author_images:
                 files_completed.append(image.removeprefix("file_"))
             if attachment.filename in files_completed:
@@ -69,6 +68,13 @@ async def on_message(message: discord.Message):
                         "file_" + attachment.filename,
                     )
                 )
+
+
+@client.event
+async def on_message(message: discord.Message):
+    channel = client.get_channel(int(os.getenv("channel_id")))
+    messages = [message async for message in channel.history(limit=None)]
+    await save_image_on_local(messages)
 
 
 def valid_image_url(url: str):
@@ -89,31 +95,29 @@ def valid_image_url(url: str):
 
 
 def generate_zoho_access_token():
-    url = f"https://accounts.zoho.com/oauth/v2/token?refresh_token={os.getenv('zoho_refresh_token')}&client_secret={os.getenv('zoho_client_secret')}&grant_type=refresh_token&client_id={os.getenv('zoho_client_id')}"
+    url = (
+        f"https://accounts.zoho.com/oauth/v2/token?refresh_token={os.getenv('zoho_refresh_token')}&"
+        f"client_secret={os.getenv('zoho_client_secret')}&"
+        f"grant_type=refresh_token&client_id={os.getenv('zoho_client_id')} "
+    )
     access_token = requests.post(url)
+
     with open(".env_token", "w") as f:
         f.write(access_token.json()["access_token"])
     return access_token.json()["access_token"]
 
 
-zoho_access_token = None
-
-
 def response_handler_500(response):
-    global zoho_access_token
     if response.status_code == 201:
         pass
     elif not response.status_code == 200:
         if response.json()["errors"][0]["title"] == "Invalid OAuth token.":
-            zoho_access_token = generate_zoho_access_token()
+            generate_zoho_access_token()
             return "Make a new request"
         else:
             raise Exception(f"{response.text} {response.status_code}")
     else:
         return True
-
-
-TOKEN = None
 
 
 def read_token_from_env_token():
@@ -126,6 +130,7 @@ def read_token_from_env_token():
 def list_folders_zoho():
     url = "https://www.zohoapis.com/workdrive/api/v1/privatespace/p1u2g5369e6ac75d0445e9a8ab10172fc8cee/folders"
 
+    response = []
     result = "Make a new request"
     while result == "Make a new request":
         headers = {
