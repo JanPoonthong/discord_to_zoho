@@ -86,6 +86,7 @@ def create_folder_in_zoho_request(local_folder, url, headers):
     response = requests.request("POST", url, headers=headers, data=payload)
     response_handler_500(response)
     print(f"{local_folder} created in Zoho WorkDrive")
+    return response
 
 
 def create_folder_zoho(folder_lists):
@@ -102,11 +103,11 @@ def create_folder_zoho(folder_lists):
     response = False
     for local_folder in file_management.DIR_LIST:
         if folder_lists == {}:
-            create_folder_in_zoho_request(local_folder, url, headers)
+            response = create_folder_in_zoho_request(local_folder, url, headers)
         try:
             folder_lists[local_folder]
         except KeyError:
-            create_folder_in_zoho_request(local_folder, url, headers)
+            response = create_folder_in_zoho_request(local_folder, url, headers)
 
     if response:
         return response.text
