@@ -14,6 +14,12 @@ Instructions:
 
         $ pip3 install -r requirements.txt
 
+## Run
+
+Instructions:
+
+        $ pytho3 main.py
+
 ## About .env
 
 Instructions:
