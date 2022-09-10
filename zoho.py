@@ -153,22 +153,13 @@ def save_zoho_drive(parent_id, folder_name):
             )
 
 
-async def download_image(url: str, images_path: str = ""):
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as resp:
-            if resp.status == 200:
-                image_name = os.path.basename(url)
-                with open(os.path.join(images_path, image_name), "wb") as f:
-                    f.write(await resp.read())
-
-
 def run():
     main.create_image_folder_in_local()
     main.add_prefix_to_local_folders()
     folder_list = list_folders_zoho()
     print(create_folder_zoho(folder_list))
-    # for folder_name in folder_list:
-    # zoho.save_zoho_drive(folder_list[folder_name], folder_name)
+    for folder_name in folder_list:
+        save_zoho_drive(folder_list[folder_name], folder_name)
     bot.client.run(os.getenv("TOKEN"))
 
 
