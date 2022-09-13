@@ -6,6 +6,10 @@ import requests
 
 import file_management
 
+"""
+    
+"""
+
 TOKEN = ""
 
 
@@ -17,6 +21,7 @@ def read_token_from_env_token():
 
 
 def generate_zoho_access_token():
+    print("Generating zoho token")
     url = (
         f"https://accounts.zoho.com/oauth/v2/token?refresh_token={os.getenv('zoho_refresh_token')}&"
         f"client_secret={os.getenv('zoho_client_secret')}&"
@@ -24,15 +29,18 @@ def generate_zoho_access_token():
     )
     access_token = requests.post(url)
 
+    print("Saving zoho token")
     with open(".env_token", "w") as f:
         f.write(access_token.json()["access_token"])
     return access_token.json()["access_token"]
 
-
-def response_handler_500(response):
+# Regenerated expired access token or raise an exception
+def error_handler(response):
     if response.status_code == 201:
         pass
     elif not response.status_code == 200:
+        print(response)
+        print(f"Error {response.status_code}")
         if response.json()["errors"][0]["title"] == "Invalid OAuth token.":
             generate_zoho_access_token()
             return "Make a new request"
@@ -43,24 +51,23 @@ def response_handler_500(response):
 
 
 def list_folders_zoho():
+    print("listing zoho folders")
     url = f"https://www.zohoapis.com/workdrive/api/v1/privatespace/{os.getenv('zoho_private_space_id')}/folders"
 
-    response = []
-    result = "Make a new request"
-    while result == "Make a new request":
-        headers = {
+    headers = {
             "Authorization": f"Zoho-oauthtoken {read_token_from_env_token()}",
         }
-
-        response = requests.request("GET", url, headers=headers)
-        result = response_handler_500(response)
+    response = requests.request("GET", url, headers=headers)
+    error_handler(response)
 
     folder_lists = {}
     response_data = response.json()["data"]
 
     if not response_data:
+        print("No folders found")
         return folder_lists
 
+    print(f"Found {len(response_data)} folders")
     for i in range(len(response_data)):
         folder_lists[response_data[i]["attributes"]["name"]] = response_data[i][
             "id"
@@ -71,6 +78,7 @@ def list_folders_zoho():
 
 def create_folder_in_zoho_request(local_folder, url, headers):
     """Request to zoho to create a folder"""
+    print("Creating folder in zoho")
     payload = json.dumps(
         {
             "data": {
@@ -84,13 +92,12 @@ def create_folder_in_zoho_request(local_folder, url, headers):
     )
 
     response = requests.request("POST", url, headers=headers, data=payload)
-    response_handler_500(response)
+    error_handler(response)
     print(f"{local_folder} created in Zoho WorkDrive")
     return response
 
-
+# Check if folder exist in zoho, if not then create a folder
 def create_folder_zoho(folder_lists):
-    """Check if folder exist in zoho, if not then create a folder"""
     if not file_management.DIR_LIST:
         return
 
@@ -115,15 +122,17 @@ def create_folder_zoho(folder_lists):
         return ""
 
 
-def save_zoho_drive(parent_id, folder_name):
-    url = f"https://www.zohoapis.com/workdrive/api/v1/upload?parent_id={parent_id}&override-name-exist=true"
+# make changes
+def save_zoho_drive(author_name, file_name):
+    print("Saving image on zoho")
+    url = f"https://www.zohoapis.com/workdrive/api/v1/upload?parent_id={os.getenv('zoho_parent_id')}&override-name-exist=true"
     headers_for_zoho = {"Authorization": f"Zoho-oauthtoken {TOKEN}"}
 
     for ext in file_management.image_extensions:
-        for local_path in Path(f"images/{folder_name}").rglob(f"*.{ext}"):
-            files = {"content": open(f"{local_path}", "rb")}
+        for local_path in Path(f"images/{author_name}").rglob(f"*.{ext}"):
+            files = {"content": open(f"/tmp/{file_name}", "rb")}
             response = requests.post(url, files=files, headers=headers_for_zoho)
-            response_handler_500(response)
+            error_handler(response)
             print(
-                f"Saved {local_path} in {folder_name} in Zoho",
+                f"Saved {local_path} in {author_name} in Zoho",
             )
