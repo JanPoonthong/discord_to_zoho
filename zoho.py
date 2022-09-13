@@ -34,6 +34,7 @@ def generate_zoho_access_token():
         f.write(access_token.json()["access_token"])
     return access_token.json()["access_token"]
 
+
 # Regenerated expired access token or raise an exception
 def error_handler(response):
     if response.status_code == 201:
@@ -55,8 +56,8 @@ def list_folders_zoho():
     url = f"https://www.zohoapis.com/workdrive/api/v1/privatespace/{os.getenv('zoho_private_space_id')}/folders"
 
     headers = {
-            "Authorization": f"Zoho-oauthtoken {read_token_from_env_token()}",
-        }
+        "Authorization": f"Zoho-oauthtoken {read_token_from_env_token()}",
+    }
     response = requests.request("GET", url, headers=headers)
     error_handler(response)
 
@@ -96,6 +97,7 @@ def create_folder_in_zoho_request(local_folder, url, headers):
     print(f"{local_folder} created in Zoho WorkDrive")
     return response
 
+
 # Check if folder exist in zoho, if not then create a folder
 def create_folder_zoho(folder_lists):
     if not file_management.DIR_LIST:
@@ -133,6 +135,4 @@ def save_zoho_drive(author_name, file_name):
             files = {"content": open(f"/tmp/{file_name}", "rb")}
             response = requests.post(url, files=files, headers=headers_for_zoho)
             error_handler(response)
-            print(
-                f"Saved {local_path} in {author_name} in Zoho",
-            )
+            print(f"Saved {local_path} in {author_name} in Zoho",)
