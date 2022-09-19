@@ -126,7 +126,7 @@ def save_zoho_drive(author_name, file_name):
     print(author_name)
     print(folders_list)
     if author_name not in folders_list:
-        create_folder_in_zoho_request(
+        parent_id = create_folder_in_zoho_request(
             author_name,
             "https://www.zohoapis.com/workdrive/api/v1/files",
             {
@@ -134,10 +134,11 @@ def save_zoho_drive(author_name, file_name):
                 "Content-Type": "application/json",
             },
         )
+    else:
+        parent_id = folders_list[author_name]
 
     print(folders_list)
 
-    parent_id = folders_list[f"{author_name}"]
     print(f"Saving {file_name} on zoho")
     url = f"https://www.zohoapis.com/workdrive/api/v1/upload?parent_id={parent_id}&override-name-exist=true"
     headers_for_zoho = {"Authorization": f"Zoho-oauthtoken {TOKEN}"}

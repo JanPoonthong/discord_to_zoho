@@ -57,4 +57,4 @@ async def on_message(message: discord.Message):
                         file_name,
                     )
                 )
-                zoho.save_zoho_drive(message.author, file_name)
+                zoho.save_zoho_drive(str(message.author), file_name)
