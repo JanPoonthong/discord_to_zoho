@@ -1,14 +1,10 @@
 import json
 import os
-from pathlib import Path
 
 import requests
 
 import file_management
 
-"""
-    
-"""
 
 TOKEN = ""
 
@@ -40,7 +36,7 @@ def error_handler(response):
     if response.status_code == 201:
         pass
     elif not response.status_code == 200:
-        print(response)
+        print(response.text)
         print(f"Error {response.status_code}")
         if response.json()["errors"][0]["title"] == "Invalid OAuth token.":
             generate_zoho_access_token()
@@ -126,13 +122,29 @@ def create_folder_zoho(folder_lists):
 
 # make changes
 def save_zoho_drive(author_name, file_name):
-    print("Saving image on zoho")
-    url = f"https://www.zohoapis.com/workdrive/api/v1/upload?parent_id={os.getenv('zoho_parent_id')}&override-name-exist=true"
+    folders_list = list_folders_zoho()
+    print(author_name)
+    print(folders_list)
+    if author_name not in folders_list:
+        create_folder_in_zoho_request(
+            author_name,
+            "https://www.zohoapis.com/workdrive/api/v1/files",
+            {
+                "Authorization": f"Zoho-oauthtoken {TOKEN}",
+                "Content-Type": "application/json",
+            },
+        )
+
+    print(folders_list)
+
+    parent_id = folders_list[f"{author_name}"]
+    print(f"Saving {file_name} on zoho")
+    url = f"https://www.zohoapis.com/workdrive/api/v1/upload?parent_id={parent_id}&override-name-exist=true"
     headers_for_zoho = {"Authorization": f"Zoho-oauthtoken {TOKEN}"}
 
-    for ext in file_management.image_extensions:
-        for local_path in Path(f"images/{author_name}").rglob(f"*.{ext}"):
-            files = {"content": open(f"/tmp/{file_name}", "rb")}
-            response = requests.post(url, files=files, headers=headers_for_zoho)
-            error_handler(response)
-            print(f"Saved {local_path} in {author_name} in Zoho",)
+    files = {"content": open(f"/tmp/{file_name}", "rb")}
+    response = requests.post(url, files=files, headers=headers_for_zoho)
+    error_handler(response)
+    print(
+        f"Saved {file_name} in {author_name} in Zoho",
+    )

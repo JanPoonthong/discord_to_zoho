@@ -51,7 +51,8 @@ async def save_image_on_local(messages):
             if valid_image_url(attachment.url):
                 await attachment.save(
                     os.path.join(
-                        final_directory, "file_" + attachment.filename,
+                        final_directory,
+                        "file_" + attachment.filename,
                     )
                 )
 

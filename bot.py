@@ -35,20 +35,26 @@ async def on_ready():
 async def on_message(message: discord.Message):
     channel = client.get_channel(int(os.getenv("channel_id")))
     print("Loading message")
-    messages = [
-        message
-        async for message in channel.history(
-            limit=os.getenv("LIMIT_OF_MESSAGE")
-        )
-    ]
+    if os.getenv("LIMIT_OF_MESSAGE") == "None":
+        limit = None
+    else:
+        limit = int(os.getenv("LIMIT_OF_MESSAGE"))
+    messages = [message async for message in channel.history(limit=limit)]
     for message in messages:
+        if len(message.attachments) > 0:
+            print(
+                f"Found {len(message.attachments)} attachment in message, saving to zoho"
+            )
         for attachment in message.attachments:
             if file_management.valid_image_url(attachment.url):
-                print(f"Saving {attachment.filename}")
+                print(f"Saving {attachment.filename} in local")
                 # YYYYMMDD_
                 current_date = datetime.date.today()
-                file_name = (
-                    f"{current_date.strftime('%Y%m%d')}" + attachment.filename
+                file_name = f"{current_date.strftime('%Y%m%d')}_{message.author}_{attachment.filename}"
+                await attachment.save(
+                    os.path.join(
+                        "/tmp/",
+                        file_name,
+                    )
                 )
-                await attachment.save(os.path.join("/tmp/", file_name,))
                 zoho.save_zoho_drive(message.author, file_name)
