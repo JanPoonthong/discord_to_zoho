@@ -35,10 +35,10 @@ async def on_ready():
 async def on_message(message: discord.Message):
     channel = client.get_channel(int(os.getenv("channel_id")))
     print("Loading message")
-    if os.getenv("LIMIT_OF_MESSAGE") == "None":
+    if os.getenv("NUMBER_OF_MESSAGES") == "None":
         limit = None
     else:
-        limit = int(os.getenv("LIMIT_OF_MESSAGE"))
+        limit = int(os.getenv("NUMBER_OF_MESSAGES"))
     messages = [message async for message in channel.history(limit=limit)]
     for message in messages:
         if len(message.attachments) > 0:
