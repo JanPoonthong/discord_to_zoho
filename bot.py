@@ -48,9 +48,9 @@ async def on_message(message: discord.Message):
         for attachment in message.attachments:
             if file_management.valid_image_url(attachment.url):
                 print(f"Saving {attachment.filename} in local")
-                # YYYYMMDD_
                 current_date = datetime.date.today()
-                file_name = f"{current_date.strftime('%Y%m%d')}_{message.author}_{attachment.filename}"
+                current_time = datetime.datetime.now().strftime("%H%M%S")
+                file_name = f"{current_date.strftime('%Y%m%d')}_{current_time}_{message.author}_{attachment.filename}"
                 await attachment.save(
                     os.path.join(
                         "/tmp/",
