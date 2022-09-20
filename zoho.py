@@ -51,11 +51,14 @@ def list_folders_zoho():
     print("listing zoho folders")
     url = f"https://www.zohoapis.com/workdrive/api/v1/privatespace/{os.getenv('zoho_private_space_id')}/folders"
 
-    headers = {
-        "Authorization": f"Zoho-oauthtoken {read_token_from_env_token()}",
-    }
-    response = requests.request("GET", url, headers=headers)
-    error_handler(response)
+    response = None
+    result = "Make a new request"
+    while result == "Make a new request":
+        headers = {
+            "Authorization": f"Zoho-oauthtoken {read_token_from_env_token()}",
+        }
+        response = requests.request("GET", url, headers=headers)
+        result = error_handler(response)
 
     folder_lists = {}
     response_data = response.json()["data"]
@@ -126,7 +129,7 @@ def save_zoho_drive(author_name, file_name):
     print(author_name)
     print(folders_list)
     if author_name not in folders_list:
-        parent_id = create_folder_in_zoho_request(
+        create_folder_in_zoho_request(
             author_name,
             "https://www.zohoapis.com/workdrive/api/v1/files",
             {
@@ -134,8 +137,8 @@ def save_zoho_drive(author_name, file_name):
                 "Content-Type": "application/json",
             },
         )
-    else:
-        parent_id = folders_list[author_name]
+        folders_list = list_folders_zoho()
+    parent_id = folders_list[author_name]
 
     print(folders_list)
 
